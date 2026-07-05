@@ -36,6 +36,8 @@ export default defineConfig((/* ctx */) => {
         // browser: 'baseline-widely-available',
         // node: 'node22'
       },
+      publicPath: '/hacker-mission/',
+      
 
       // https://v2.quasar.dev/quasar-cli-vite/page-routing-with-vue-router#filename-based-routing
       // filenameBasedRouting: true,

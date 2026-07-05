@@ -18,8 +18,9 @@
     "lint": "oxfmt && oxlint --fix",
     "lint:check": "oxfmt --check && oxlint",
     "dev": "quasar dev",
-    "build": "quasar build",
-    "postinstall": "quasar prepare --silent"
+    "postinstall": "quasar prepare --silent",
+    "build": "quasar build -m spa",
+    "deploy": "quasar build -m spa && gh-pages -d dist/spa"
   },
   "dependencies": {
     "@quasar/extras": "^2.0.0",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@quasar/app-vite": "^3.0.0-rc.6",
     "autoprefixer": "^10.4.27",
+    "gh-pages": "^6.3.0",
     "oxfmt": "^0.x",
     "oxlint": "^1.x",
     "postcss": "^8.5.8"
