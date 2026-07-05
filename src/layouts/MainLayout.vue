@@ -126,17 +126,66 @@
           />
         </q-stepper-navigation>
 
-      </q-step>
+            </q-step>
 
-            <q-step
-              :name="3"
-              title="3. Kryptographie"
-              icon="lock"
-            >
-              <div class="text-center">
-                Geheime Nachrichten werden entschlüsselt
-                und selbst verschlüsselt.
+            <!-- STEP 3 -->
+            <q-step :name="3" title="3. Kryptographie" icon="lock">
+
+              <div class="text-center text-h6 q-mb-md">
+                🕵️ Entschlüssle die geheime Nachricht
               </div>
+
+              <q-banner class="bg-black text-green-4 q-mb-md">
+                Geheimcode: <b>URERW</b>
+              </q-banner>
+
+              <!-- ALPHABET HINT -->
+              <q-card flat bordered class="q-pa-md q-mb-md bg-blue-1">
+
+                <div class="text-center text-subtitle2 q-mb-sm">
+                  🔤 Caesar-Chiffre Hilfe
+                </div>
+
+                <div class="text-center text-body2" style="letter-spacing:4px">
+                  ABCDEFGHIJKLMNOPQRSTUVWXYZ
+                </div>
+
+                <q-separator class="q-my-sm" />
+
+                <div class="text-center text-caption">
+                  Jeder Buchstabe wurde um <b>3 Stellen nach rechts</b> verschoben.
+                  <br>
+                  Zum Entschlüsseln gehst du <b>3 zurück</b>.
+                </div>
+
+              </q-card>
+
+              <q-banner class="bg-blue-2 text-blue-10 q-mb-md">
+                💡 Tipp: A → D, B → E, C → F ...
+              </q-banner>
+
+              <q-input v-model="answer" label="Deine Lösung" />
+
+              <q-btn
+                class="q-mt-md"
+                color="primary"
+                label="Prüfen"
+                @click="check"
+              />
+
+              <q-banner v-if="correct" class="bg-green-2 text-green-10 q-mt-md">
+                ✅ Richtig! Passwort: <b>ROBOT</b>
+              </q-banner>
+
+              <q-stepper-navigation>
+              <q-btn
+                color="primary"
+                label="Weiter"
+                :disable="!correct"
+                @click="step = 4"
+              />
+            </q-stepper-navigation>
+
             </q-step>
 
             <q-step
@@ -191,7 +240,15 @@ const switchB = ref(false)
 
 const lampOn = computed(() => switchA.value && switchB.value)
 
+const answer = ref('')
 
+// richtige Lösung (für "URERW" mit Shift -3)
+const solution = 'ROBOT'
+
+// Prüfung
+const correct = computed(() => {
+  return answer.value.trim().toUpperCase() === solution
+})
 </script>
 
 <style scoped>
