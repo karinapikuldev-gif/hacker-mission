@@ -15,13 +15,13 @@
               Die sechs Missionen
             </q-chip>
 
-            <q-chip
-              color="deep-orange"
-              text-color="white"
-              class="text-subtitle1"
-            >
-              FINALE: HACKER GEFASST
-            </q-chip>
+ <q-chip
+  color="deep-orange"
+  text-color="white"
+  class="text-h6"
+>
+  Informatik entdecken
+</q-chip>
 
           </div>
 
@@ -339,74 +339,87 @@
 
 </q-step>
 <!-- STEP 6 -->
-            <q-step :name="6" title="6. Pseudocode Labyrinth" icon="route">
+ <q-step :name="6" title="Pseudocode" icon="route">
 
-  <div class="text-center text-h6 q-mb-md">
-    🧭 Entdecke das geheime Labyrinth
-  </div>
+              <div class="text-center text-h6 q-mb-md">
+                🕵️ Finde den Hacker im System
+              </div>
 
-  <!-- INSTRUCTIONS -->
-  <q-card flat bordered class="q-pa-md q-mb-md bg-blue-1">
+              <q-banner class="bg-blue-1 text-blue-10 q-mb-md">
+                Du bist ein Geheimagent im System. Der Hacker hat Spuren im Netzwerk hinterlassen. 
+                Schreibe Befehle, um seinen Weg zu verfolgen.
+              </q-banner>
 
-    <div class="text-subtitle2 q-mb-sm">
-      📜 Pseudocode (Schrittfolge)
-    </div>
+              <!-- Controls -->
+              <div class="q-mb-md">
+   <div
+  v-for="(cmd, i) in commandList"
+  :key="i"
+  class="row items-center q-gutter-sm q-mb-sm"
+>
+  <q-select
+    v-model="cmd.dir"
+    :options="['right','left','up','down']"
+    label="Richtung"
+    dense
+    style="width: 120px"
+  />
 
-    <pre style="font-family: monospace; font-size: 14px;">
-START → (0,0)
+  <q-input
+    v-model.number="cmd.num"
+    type="number"
+    label="Schritte"
+    dense
+    style="width: 100px"
+  />
 
-1. MOVE RIGHT 2x
-2. MOVE DOWN 1x
-3. MOVE RIGHT 1x
-4. MOVE DOWN 2x
-5. MOVE RIGHT 2x → KEY 🔑
-6. MOVE RIGHT 1x
-7. MOVE UP 1x
-8. MOVE RIGHT 2x → EXIT 🚪
-    </pre>
+  <q-space />
 
-  </q-card>
+  <q-btn
+    icon="delete"
+    flat
+    color="negative"
+    @click="removeCmd(i)"
+  />
+</div>
 
-  <!-- STATUS -->
-  <q-banner class="bg-blue-2 text-blue-10 q-mb-md">
-    Schlüssel:
-    <b>{{ hasKey ? "gefunden 🔑" : "noch nicht gefunden" }}</b>
-  </q-banner>
+                <q-btn color="primary" icon="add" label="Schritt" @click="addCmd" />
+              </div>
 
-  <!-- GRID -->
-  <div class="labyrinth q-mb-md column items-center">
+              <!-- ACTIONS -->
+              <div class="row q-gutter-sm q-mb-md">
+                <q-btn color="primary" label="Start" @click="runProgram" />
+                <q-btn color="negative" label="Reset" @click="reset" />
+              </div>
 
-    <div
-      v-for="(row, r) in grid"
-      :key="r"
-      class="row no-wrap"
-    >
-      <div
-        v-for="(cell, c) in row"
-        :key="c"
-        class="cell"
-        :class="cellClass(cell, c, r)"
-      />
-    </div>
+              <!-- STATUS -->
+              <q-banner v-if="success" class="bg-green-2 text-green-10">
+                🎉 Ziel erreicht!
+              </q-banner>
 
-  </div>
+              <q-banner v-if="failed" class="bg-red-2 text-red-10 explosion-banner">
+                💥 BOOM! Fehler im Code
+              </q-banner>
 
-  <!-- CONTROLS -->
-  <div class="row justify-center q-gutter-sm">
+              <!-- GRID -->
+              <div class="labyrinth">
+                <div v-for="(row, y) in grid" :key="y" class="row">
 
-    <q-btn icon="arrow_upward" @click="move(0, -1)" />
-    <q-btn icon="arrow_back" @click="move(-1, 0)" />
-    <q-btn icon="arrow_forward" @click="move(1, 0)" />
-    <q-btn icon="arrow_downward" @click="move(0, 1)" />
+                  <div
+                    v-for="(cell, x) in row"
+                    :key="x"
+                    class="cell"
+                    :class="getCellClass(x, y)"
+                  >
+                    <span v-if="player.x === x && player.y === y">🕵️‍♂️</span>
+                    <span v-else-if="cell === 3">👤</span>
+                  </div>
 
-  </div>
+                </div>
+              </div>
 
-  <!-- WIN -->
-  <q-banner v-if="won" class="bg-green-2 text-green-10 q-mt-md">
-    🎉 Ziel erreicht! Schlüssel genutzt!
-  </q-banner>
+            </q-step>
 
-</q-step>
 
           </q-stepper>
 
@@ -548,71 +561,134 @@ function checkBinary () {
 const choice = ref('')
 
 
-const player = ref({ x: 0, y: 0 })
-const hasKey = ref(false)
-const won = ref(false)
+/* STEP 6 STATE */
 
-// visited tiles
-const visited = ref(new Set())
-
+/* ================= STATE ================= */
 const grid = [
-  [0,0,0,1,0],
-  [1,1,0,1,0],
-  [0,0,0,0,0],
-  [0,1,1,1,1],
-  [0,0,3,0,2]
+  [1,0,0,0,0,0,0],
+  [1,1,1,1,0,0,0],
+  [0,0,0,1,1,1,0],
+  [0,0,0,0,0,1,0],
+  [0,0,0,0,0,1,0],
+  [0,0,0,0,1,1,0],
+  [0,0,3,1,1,0,0]
 ]
 
-function key(x, y) {
-  return `${x},${y}`
+const player = ref({ x: 0, y: 0 })
+
+const commandList = ref([
+  { dir: "down", num: 1 }
+])
+
+const visited = ref(new Set())
+const explosionCell = ref(null)
+
+const success = ref(false)
+const failed = ref(false)
+const running = ref(false)
+let runId = 0
+
+/* ================= HELPERS ================= */
+const sleep = (ms) => new Promise(r => setTimeout(r, ms))
+
+function addCmd() {
+  commandList.value.push({ dir: "right", num: 1 })
 }
 
-// start visible
-visited.value.add(key(0, 0))
-
-function move(dx, dy) {
-
-  const newX = player.value.x + dx
-  const newY = player.value.y + dy
-
-  if (
-    newX < 0 || newY < 0 ||
-    newY >= grid.length ||
-    newX >= grid[0].length
-  ) return
-
-  if (grid[newY][newX] === 1) return
-
-  player.value.x = newX
-  player.value.y = newY
-
-  // reveal tile
-  visited.value.add(key(newX, newY))
-
-  // key
-  if (grid[newY][newX] === 3) {
-    hasKey.value = true
-    grid[newY][newX] = 0
-  }
-
-  // goal
-  if (grid[newY][newX] === 2 && hasKey.value) {
-    won.value = true
-  }
+function removeCmd(i) {
+  commandList.value.splice(i, 1)
 }
 
-function cellClass(cell, x, y) {
+/* ================= RESET ================= */
+async function reset() {
+  player.value = { x: 0, y: 0 }
+  visited.value = new Set()
 
-  const isVisible = visited.value.has(`${x},${y}`)
+  success.value = false
+  failed.value = false
+  explosionCell.value = null
+  await nextTick()
+}
 
-  if (!isVisible) {
-    return "fog"
+/* ================= EXPLOSION ================= */
+function explode(x, y) {
+  explosionCell.value = `${x},${y}`
+  failed.value = true
+  running.value = false
+
+  setTimeout(() => {
+    explosionCell.value = null
+  }, 600)
+}
+
+/* ================= RUN ================= */
+async function runProgram() {
+  const id = ++runId
+  if (running.value) return
+
+  running.value = true
+  await reset()
+  await sleep(150)
+
+  for (const cmd of commandList.value) {
+    for (let i = 0; i < cmd.num; i++) {
+
+      if (id !== runId) return
+
+      let nx = player.value.x
+      let ny = player.value.y
+
+      if (cmd.dir === "right") nx++
+      if (cmd.dir === "left") nx--
+      if (cmd.dir === "down") ny++
+      if (cmd.dir === "up") ny--
+
+      if (
+        nx < 0 || ny < 0 ||
+        ny >= grid.length ||
+        nx >= grid[0].length
+      ) {
+        explode(nx, ny)
+        return
+      }
+
+      if (grid[ny][nx] === 0) {
+        explode(nx, ny)
+        return
+      }
+
+      player.value = { x: nx, y: ny }
+      visited.value.add(`${nx},${ny}`)
+
+      if (grid[ny][nx] === 3) {
+        success.value = true
+        running.value = false
+        return
+      }
+
+      await sleep(120)
+    }
   }
+
+  running.value = false
+}
+
+/* ================= CELL CLASS ================= */
+function getCellClass(x, y) {
+  const key = `${x},${y}`
+  const cell = grid[y][x]
 
   return {
-    wall: cell === 1,
-    goal: cell === 2,
+    path: cell === 1,
+    wall: cell === 0,
     key: cell === 3,
+
+    visited: visited.value.has(key),
+
+    // ⭐ FORCE START CELL ALWAYS GREEN
+    start: x === 0 && y === 0,
+
+    explosion: explosionCell.value === key,
     player: player.value.x === x && player.value.y === y
   }
 }
@@ -627,47 +703,122 @@ function cellClass(cell, x, y) {
   box-shadow: none;
 }
 
-.rounded-borders {
-  border-radius: 18px;
+/* =========================
+   LABYRINTH CONTAINER
+========================= */
+
+.start {
+  background: #b9f6ca !important; /* strong green */
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.2);
 }
 
 .labyrinth {
+  background: #f8fafc;
+  border: 2px solid #e5e7eb;
+  padding: 8px;
+  border-radius: 14px;
+
   display: inline-block;
-  background: #111;
-  padding: 10px;
-  border-radius: 12px;
+  overflow: auto;
+
+  /* center on page */
+  margin: 0 auto;
 }
 
+/* =========================
+   GRID RESPONSIVE WRAPPER
+   (IMPORTANT FOR MOBILE)
+========================= */
+.labyrinth .row {
+  flex-wrap: nowrap;
+}
+
+/* =========================
+   CELLS (DEFAULT DESKTOP)
+========================= */
 .cell {
-  width: 40px;
-  height: 40px;
-  border: 1px solid #444;
+  width: 42px;
+  height: 42px;
+
+  border: 1px solid #eaeaea;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  transition: all 0.2s ease;
+  font-size: 16px;
 }
 
-/* hidden tiles */
-.fog {
-  background: #000 !important;
+/* =========================
+   VISITED PATH (GREEN)
+========================= */
+.visited {
+  background: #b9f6ca;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.08);
 }
 
-/* visible elements */
+/* =========================
+   WALL (DARK BUT SOFT)
+========================= */
 .wall {
-  background: #333;
+  background: #263238;
 }
 
-.goal {
-  background: #ffd54f;
-}
-
+/* =========================
+   KEY
+========================= */
 .key {
-  background: #ff9800;
+  background: #ffd54f;
+  animation: glowKey 1.5s infinite ease-in-out;
 }
 
+@keyframes glowKey {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.2); }
+}
+
+/* =========================
+   PLAYER (ROBOT)
+========================= */
 .player {
-  background: #00bcd4;
-  transition: all 0.15s ease;
+  background: #40c4ff;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(64, 196, 255, 0.7);
+  transform: scale(1.1);
+}
+
+/* =========================
+   EXPLOSION CELL (RED BUT MODERN)
+========================= */
+.explosion {
+  background: #ff3b30 !important;
+  animation: boom 0.4s ease;
+  border-radius: 6px;
+}
+
+@keyframes boom {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.5); filter: brightness(2); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* =========================
+   SHAKE BANNER
+========================= */
+.explosion-banner {
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+.q-banner {
+  border-radius: 10px;
 }
 
 .mini-card {
@@ -687,5 +838,4 @@ function cellClass(cell, x, y) {
 .no-wrap::-webkit-scrollbar {
   height: 6px;
 }
-
 </style>
