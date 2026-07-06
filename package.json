@@ -25,8 +25,11 @@
   "dependencies": {
     "@quasar/extras": "^2.0.0",
     "quasar": "^2.21.0",
+    "sortablejs": "^1.15.7",
     "vue": "^3.5.22",
-    "vue-router": "^5.0.6"
+    "vue-draggable-next": "^2.3.0",
+    "vue-router": "^5.0.6",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@quasar/app-vite": "^3.0.0-rc.6",
